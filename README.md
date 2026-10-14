@@ -1,7 +1,7 @@
 # PayPilot — AI Payment Approval Agent
 
 Autonomous 4-agent desk that reviews payment requests and executes approved
-payouts via PayPal. Built for the **PayPal AI Hackathon 2026** ($67,500+).
+payouts via PayPal. Built for the **PayPal AI Hackathon 2026** ($69,750 total prize pool).
 
 **Powered by PayPal** · MIT
 
