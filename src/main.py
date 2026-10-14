@@ -1,6 +1,6 @@
 # PayPilot — AI payment approval agent for PayPal
 # 4-agent desk (Scout → Estimator → Decision → Risk) → PayPal Payouts API
-# Built for PayPal AI Hackathon 2026 ($67,500+)
+# Built for PayPal AI Hackathon 2026 ($69,750 total prize pool)
 
 import json
 import os
@@ -25,6 +25,15 @@ def log(obj: dict):
     print(json.dumps(obj, ensure_ascii=False), flush=True)
 
 
+def need(name: str, default: str | None = None) -> str:
+    v = os.getenv(name, default)
+    if not v:
+        print(f"Missing required env var: {name} "
+              f"(copy .env.example to .env and fill it in)")
+        sys.exit(2)
+    return v
+
+
 def main():
     if len(sys.argv) < 2:
         print('Usage: python main.py \'<json payment request>\'')
@@ -34,7 +43,7 @@ def main():
         sys.exit(1)
 
     request = json.loads(sys.argv[1])
-    team = AgentTeam(os.environ["LLM_BASE_URL"], os.environ.get("LLM_API_KEY", ""),
+    team = AgentTeam(need("LLM_BASE_URL"), os.environ.get("LLM_API_KEY", ""),
                      os.environ.get("LLM_MODEL", "cohere/north-mini-code:free"))
     result = team.review(request, MAX_PAYOUT, MIN_CONF)
     log({"event": "review", **result})
@@ -45,9 +54,9 @@ def main():
             log({"event": "payout_dry_run", "payee": request.get("payee"),
                  "amount": amount, "note": "no real payout in DRY_RUN"})
             return
-        pp = PayPalClient(os.environ["PAYPAL_BASE_URL"],
-                          os.environ["PAYPAL_CLIENT_ID"],
-                          os.environ["PAYPAL_CLIENT_SECRET"])
+        pp = PayPalClient(need("PAYPAL_BASE_URL"),
+                          need("PAYPAL_CLIENT_ID"),
+                          need("PAYPAL_CLIENT_SECRET"))
         payout = pp.create_payout(request["payee"], f"{amount:.2f}",
                                   request.get("currency", "USD"),
                                   result.get("reason", ""))
